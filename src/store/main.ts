@@ -9,7 +9,7 @@ export abstract class Store<T extends Object> {
         this.$state = reactive(data) as T;
     }
 
-    $reset() {
+    $reset(): void {
         const data = this.$setup();
         this.$state = reactive(data) as T;
     }
