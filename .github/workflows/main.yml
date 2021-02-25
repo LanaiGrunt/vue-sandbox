@@ -1,0 +1,39 @@
+name: main
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/cache@v2
+      with:
+        path: '~/.cache'
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '14.x'
+    - run: yarn install --frozen-lockfile
+    - run: yarn lint --no-fix
+    - run: yarn lint:style --no-fix
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/cache@v2
+      with:
+        path: '~/.cache'
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '14.x'
+    - run: yarn install --frozen-lockfile
+    - run: yarn test:unit
+    - run: yarn test:e2e --headless
+    - uses: codacy/codacy-coverage-reporter-action@master
+      with:
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        coverage-reports: coverage/lcov.info

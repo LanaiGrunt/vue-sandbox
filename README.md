@@ -1,4 +1,6 @@
 # vue-sandbox
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/629b1cee3e03417ea33c358e87c905a7)](https://www.codacy.com/gh/LanaiGrunt/vue-sandbox/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=LanaiGrunt/vue-sandbox&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/629b1cee3e03417ea33c358e87c905a7)](https://www.codacy.com/gh/LanaiGrunt/vue-sandbox/dashboard?utm_source=github.com&utm_medium=referral&utm_content=LanaiGrunt/vue-sandbox&utm_campaign=Badge_Coverage)
 
 ## Project setup
 ```bash
