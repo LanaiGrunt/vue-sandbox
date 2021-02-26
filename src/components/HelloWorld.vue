@@ -20,7 +20,7 @@
             const firstNumber = ref(0);
             const secondNumber = ref(0);
             const result = computed(() => firstNumber.value + secondNumber.value);
-            const clicks = computed(() => clickStore.state.clicks);
+            const clicks = computed(() => clickStore.clicks);
 
             return {
                 firstNumber,

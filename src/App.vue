@@ -7,6 +7,11 @@
             About
         </router-link>
     </div>
+    <div>
+        <a id="reset" href="#" @click.prevent="resetClicks">reset</a>
+        |
+        <a id="fetch" href="#" @click.prevent="fetchClicks">fetch</a>
+    </div>
     <router-view @click="click" />
 </template>
 
@@ -18,6 +23,8 @@
         setup() {
             return {
                 click: () => clickStore.inc(),
+                resetClicks: () => clickStore.setClicks(0),
+                fetchClicks: () => clickStore.fetchClicks(),
             };
         }, 
     });
