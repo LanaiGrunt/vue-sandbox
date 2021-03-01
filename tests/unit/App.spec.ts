@@ -1,23 +1,36 @@
-import { flushPromises, mount } from '@vue/test-utils';
+import { flushPromises, mount, VueWrapper } from '@vue/test-utils';
 import App from '@/App.vue';
 import router from '@/router';
 import clickStore from '@/store/clickStore';
-import axios from 'axios';
+import { server, rest } from './msw';
 import _ from 'lodash';
+import { ComponentPublicInstance } from 'vue';
 
 describe('App.vue', () => {
-    // Arrange
-    const wrapper = mount(App, {
-        global: {
-            plugins: [
-                router,
-            ],
-        },
+    let wrapper: VueWrapper<ComponentPublicInstance>;
+
+    beforeAll(() => {
+        server.listen();
     });
 
     beforeEach(async () => {
-        clickStore.$reset();
+        wrapper = mount(App, {
+            global: {
+                plugins: [
+                    router,
+                ],
+            },
+        });
         await router.push('/');
+    });
+
+    afterEach(() => {
+        clickStore.$reset();
+        server.resetHandlers();
+    });
+
+    afterAll(() => {
+        server.close();
     });
 
     it('has nav', async () => {
@@ -52,17 +65,21 @@ describe('App.vue', () => {
 
     it('can fetch the click counter', async () => {
         // Arrange
-        const mockedPost = jest.spyOn(axios, 'post');
-        mockedPost.mockImplementationOnce(() => new Promise(resolve => {
-            resolve({ data: { random: _.random(42, 69) } });
-        }));
-        // Act
+        server.use(
+            rest.post('https://reqres.in/api/random', (req, res, ctx) => {
+                return res(
+                    ctx.json({
+                        random: _.random(42, 69),
+                    }),
+                );
+            }),
+        );
         await wrapper.find('#fetch').trigger('click');
+        await new Promise(r => setTimeout(r, 25)); // workaround
         await flushPromises();
         // Assert
         expect(clickStore.clicks).toBeGreaterThanOrEqual(42);
         expect(clickStore.clicks).toBeLessThanOrEqual(69);
-        expect(mockedPost).toBeCalled();
-        expect(mockedPost.mock.results[0].value).toBeInstanceOf(Promise);
+        expect(wrapper.find('#clicks').text()).toMatch(String(clickStore.clicks));
     });
 });
