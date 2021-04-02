@@ -1,41 +1,30 @@
-import { Store } from './main';
+import { defineStore } from 'pinia';
 import axios from 'axios';
 import _ from 'lodash';
 
-interface State extends Object {
-    clicks: number;
-}
+export const useClickStore = defineStore({
+    id: 'click',
+    state: () => ({
+        clicks: 0,
+    }),
+    actions: {
+        $reset() {
+            this.clicks = 0;
+        },
+        inc() {
+            this.clicks += 1;
+        },
+        setClicks(clicks: number) {
+            this.clicks = clicks;
+        },
+        async fetchClicks(): Promise<number> {
+            const { data } = await axios.post('https://reqres.in/api/random', {
+                random: _.random(42, 69),
+            });
+            const clicks = Number(data.random);
+            this.setClicks(clicks);
 
-class ClickStore extends Store<State> {
-    protected $setup(): State {
-        return {
-            clicks: 0,
-        };
-    }
-
-    get clicks(): number {
-        return this.$state.clicks;
-    }
-
-    inc(): void {
-        this.$state.clicks += 1;
-    }
-
-    setClicks(clicks: number) {
-        this.$state.clicks = clicks;
-    }
-
-    async fetchClicks(): Promise<number> {
-        const { data } = await axios.post('https://reqres.in/api/random', {
-            random: _.random(42, 69),
-        });
-        const clicks = Number(data.random);
-        this.setClicks(clicks);
-
-        return this.clicks;
-    }
-}
-
-const clickStore: ClickStore = new ClickStore();
-
-export default clickStore;
+            return this.clicks;
+        },
+    },
+});

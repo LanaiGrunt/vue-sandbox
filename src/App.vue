@@ -17,10 +17,12 @@
 
 <script lang="ts">
     import { defineComponent } from 'vue';
-    import clickStore from '@/store/clickStore';
+    import { useClickStore } from '@/store/clickStore';
     
     export default defineComponent({
         setup() {
+            const clickStore = useClickStore();
+
             return {
                 click: () => clickStore.inc(),
                 resetClicks: () => clickStore.setClicks(0),

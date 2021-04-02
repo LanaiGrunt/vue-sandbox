@@ -13,10 +13,11 @@
 
 <script lang="ts">
     import { defineComponent, ref, computed } from 'vue';
-    import clickStore from '@/store/clickStore';
+    import { useClickStore } from '@/store/clickStore';
 
     export default defineComponent({
         setup() {
+            const clickStore = useClickStore();
             const firstNumber = ref(0);
             const secondNumber = ref(0);
             const result = computed(() => firstNumber.value + secondNumber.value);

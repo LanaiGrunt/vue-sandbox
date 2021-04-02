@@ -1,31 +1,39 @@
-import { flushPromises, mount, VueWrapper } from '@vue/test-utils';
-import App from '@/App.vue';
-import router from '@/router';
-import clickStore from '@/store/clickStore';
-import { server, rest } from './msw';
-import _ from 'lodash';
+import { mount, VueWrapper } from '@vue/test-utils';
+import { waitFor } from '@testing-library/vue';
 import { ComponentPublicInstance } from 'vue';
+import { createPinia } from 'pinia';
+import { server, rest } from './msw';
+import router from '@/router';
+import _ from 'lodash';
+import App from '@/App.vue';
+import { useClickStore } from '@/store/clickStore';
 
 describe('App.vue', () => {
     let wrapper: VueWrapper<ComponentPublicInstance>;
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    let clickStore: any;
 
     beforeAll(() => {
         server.listen();
     });
 
-    beforeEach(async () => {
+    beforeEach(async (cb) => {
         wrapper = mount(App, {
             global: {
                 plugins: [
                     router,
+                    createPinia(),
                 ],
             },
         });
+        clickStore = useClickStore();
+        clickStore.$reset();
         await router.push('/');
+        await router.isReady();
+        cb();
     });
 
     afterEach(() => {
-        clickStore.$reset();
         server.resetHandlers();
     });
 
@@ -33,17 +41,21 @@ describe('App.vue', () => {
         server.close();
     });
 
-    it('has nav', async () => {
+    it('has a nav', async () => {
+        // Arrange
+        const nav = wrapper.find('#nav');
         // Assert
-        expect(wrapper.find('#nav')).toBeDefined();
+        expect(nav.text()).toContain('Home');
+        expect(nav.text()).toContain('About');
     });
 
     it('can navigate', async () => {
         // Act
-        await wrapper.find('#nav a:nth-of-type(2)').trigger('click');
-        await flushPromises();
+        await wrapper.find('#nav a[href="/about"]').trigger('click');
         // Assert
-        expect(wrapper.find('.about h1').text()).toEqual('This is an about page');
+        await waitFor(() => {
+            expect(wrapper.find('.about h1').text()).toEqual('This is an about page');
+        });
     });
 
     it('reacts on clicks', async () => {
@@ -74,12 +86,13 @@ describe('App.vue', () => {
                 );
             }),
         );
+        // Act
         await wrapper.find('#fetch').trigger('click');
-        await new Promise(r => setTimeout(r, 25)); // workaround
-        await flushPromises();
         // Assert
-        expect(clickStore.clicks).toBeGreaterThanOrEqual(42);
-        expect(clickStore.clicks).toBeLessThanOrEqual(69);
-        expect(wrapper.find('#clicks').text()).toMatch(String(clickStore.clicks));
+        await waitFor(() => {
+            expect(clickStore.clicks).toBeGreaterThanOrEqual(42);
+            expect(clickStore.clicks).toBeLessThanOrEqual(69);
+            expect(wrapper.find('#clicks').text()).toMatch(String(clickStore.clicks));
+        });
     });
 });
